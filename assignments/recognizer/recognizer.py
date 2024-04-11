@@ -77,6 +77,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
         # UI calls
         self.btnLoadImage.clicked.connect(self.load_image)
+        self.btnExtendData.clicked.connect(self.extend_source_data)
         self.btnTeach.clicked.connect(self.train_model)
         self.btnRecognize.clicked.connect(self.recognize)
 
@@ -91,11 +92,19 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         Load trained model if it exists
         """
 
-        print('Loading train.csv...')
-
         # Load MNIST
+        data_file_extended = f"{root}/data/mnist/train_extended.csv"
         data_file = f"{root}/data/mnist/train.csv"
-        data = pd.read_csv(data_file)
+
+        if os.path.exists(data_file_extended):
+            token = 'Extended'
+            print('Loading Extended Data...')
+            data = pd.read_csv(data_file_extended)
+        else:
+            token = 'Original'
+            print('Loading Original Data...')
+            data = pd.read_csv(data_file)
+
         self.data = np.array(data)
 
         # Split into DEV and TRAIN sets
@@ -111,7 +120,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         self.numbers_data_train = data_train[1:columns]
         self.numbers_data_train = self.numbers_data_train / 255.
 
-        print('The train.csv loaded!')
+        print(f'The {token} loaded!')
 
         if not os.path.exists(self.W1_path):
             return
@@ -122,6 +131,45 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         self.b1 = np.loadtxt(self.b1_path, delimiter=',')
         self.b2 = np.loadtxt(self.b2_path, delimiter=',')
         print('Data loaded!')
+
+    def extend_source_data(self):
+        """
+        Extend source data set with rotated images
+        """
+
+        print('Extending Source Data...')
+
+        # Load the dataset
+        input_csv = f"{root}/data/mnist/train.csv"
+        output_csv = f"{root}/data/mnist/train_extended.csv"
+
+        df = pd.read_csv(input_csv, header=None, skiprows=1)
+
+        # Prepare a container for extended data
+        extended_data = []
+
+        # Iterate through each row in the dataset
+        for index, row in df.iterrows():
+            label = row[0]
+            pixels = row[1:].values
+
+            # Convert the pixels to an image (28x28)
+            image = Image.fromarray(pixels.reshape(28, 28).astype('uint8'))
+
+            # Original image
+            extended_data.append([label] + list(pixels))
+
+            # Rotate and add to extended data
+            for angle in [90, 180, 270]:
+                rotated_image = image.rotate(angle)
+                rotated_pixels = np.array(rotated_image).flatten()
+                extended_data.append([label] + list(rotated_pixels))
+
+        # Convert extended data to DataFrame and save
+        extended_df = pd.DataFrame(extended_data)
+        extended_df.to_csv(output_csv, index=False, header=False)
+
+        print('Extended Data saved to train_extended.csv!')
 
     # Image Display
     def update_plot(self, image):

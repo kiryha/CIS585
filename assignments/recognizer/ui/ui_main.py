@@ -48,6 +48,12 @@ class Ui_Recognizer(object):
 
         self.verticalLayout.addWidget(self.splitter_2)
 
+        self.btnExtendData = QPushButton(self.centralwidget)
+        self.btnExtendData.setObjectName(u"btnExtendData")
+        self.btnExtendData.setMinimumSize(QSize(0, 35))
+
+        self.verticalLayout.addWidget(self.btnExtendData)
+
         self.btnTeach = QPushButton(self.centralwidget)
         self.btnTeach.setObjectName(u"btnTeach")
         self.btnTeach.setMinimumSize(QSize(0, 35))
@@ -115,6 +121,7 @@ class Ui_Recognizer(object):
         self.linAlfa.setText(QCoreApplication.translate("Recognizer", u"0.1", None))
         self.label_2.setText(QCoreApplication.translate("Recognizer", u"Iterations: ", None))
         self.linIterations.setText(QCoreApplication.translate("Recognizer", u"500", None))
+        self.btnExtendData.setText(QCoreApplication.translate("Recognizer", u"Extend Source Data", None))
         self.btnTeach.setText(QCoreApplication.translate("Recognizer", u"Train Model", None))
         self.btnLoadImage.setText(QCoreApplication.translate("Recognizer", u"Load Image", None))
         self.label_3.setText(QCoreApplication.translate("Recognizer", u"MNIST Image index", None))

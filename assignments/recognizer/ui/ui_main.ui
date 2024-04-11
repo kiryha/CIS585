@@ -62,6 +62,19 @@
      </widget>
     </item>
     <item>
+     <widget class="QPushButton" name="btnExtendData">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>35</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Extend Source Data</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QPushButton" name="btnTeach">
       <property name="minimumSize">
        <size>
