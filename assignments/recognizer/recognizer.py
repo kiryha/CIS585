@@ -123,14 +123,17 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         print(f'The {token} loaded!')
 
         if not os.path.exists(self.W1_path):
+            print('Trained data does not exists. Train model first!')
             return
 
-        print('Loading data...')
+        print(f'Loading Trained {token} data...')
+
         self.W1 = np.loadtxt(self.W1_path, delimiter=',')
         self.W2 = np.loadtxt(self.W2_path, delimiter=',')
         self.b1 = np.loadtxt(self.b1_path, delimiter=',')
         self.b2 = np.loadtxt(self.b2_path, delimiter=',')
-        print('Data loaded!')
+        
+        print(f'Data loaded!')
 
     def extend_source_data(self):
         """
