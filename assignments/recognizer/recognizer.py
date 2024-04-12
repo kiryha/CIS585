@@ -62,6 +62,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         # Model
         self.data_train = None  # MNIST csv
         self.data_test = None  # MNIST csv
+        self.data_display = None  # MNIST csv data to display image in UI for debug/test
         self.numbers_data_train = None  # Numbers data (array of floats for each pixel) for TRAIN set of images
         self.numbers_labels_train = None  # Number values (labels): 0. 1, 2, 3, ... 9 for TRAIN set of images
         self.numbers_data_test = None
@@ -80,6 +81,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         self.btnExtendData.clicked.connect(self.extend_source_data)
         self.btnTeach.clicked.connect(self.train_model)
         self.btnRecognize.clicked.connect(self.recognize)
+        self.btnDisplay.clicked.connect(self.display_mnist)
 
     def display_random(self):
 
@@ -115,6 +117,8 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         rows_train, columns_train = self.data_train.shape
         data_test = self.data_test.T
         data_train = self.data_train.T
+
+        self.data_display = data_train
 
         self.numbers_data_test = data_test
         self.numbers_data_test = self.numbers_data_test / 255.
@@ -179,6 +183,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
     # Image Display
     def update_plot(self, image):
+
         self.plot_widget.update_plot(image)
 
     # ML functions
@@ -335,6 +340,25 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         message = f'Custom Number {image_label} recognized as {prediction[0]}'
         print(message)
         self.statusbar.showMessage(message)
+
+    def display_mnist(self):
+        """
+        Load train.csv data into UI
+        """
+
+        image_index = int(self.linIndex.text())
+
+        # data_file = f"{root}/data/mnist/train.csv"
+        # data = np.array(pd.read_csv(data_file))
+        # data = data.T
+
+        current_image = self.data_display[1:, image_index, None]
+        current_image = current_image.reshape((28, 28)) * 255
+        self.update_plot(current_image)
+
+        message = f'Display: {self.data_display[0][image_index]}'
+        self.statusbar.showMessage(message)
+        print(message)
 
     def recognize_mnist(self, index):
         """
