@@ -112,6 +112,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
         self.data_train = np.array(data_train)
         self.data_test = np.array(data_test)
+        # self.data_display = np.array(pd.read_csv(data_file_extended)).T
         self.data_display = np.array(pd.read_csv(f"{root}/data/mnist/train_extended_test.csv")).T
 
         # Load TEST and TRAIN sets
@@ -151,16 +152,34 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
         # Load the dataset
         input_csv = f"{root}/data/mnist/train.csv"
-        output_csv = f"{root}/data/mnist/train_extended_test.csv"
+        output_csv = f"{root}/data/mnist/train_extended.csv"
+        source_data = pd.read_csv(input_csv)
 
-        data_source = pd.read_csv(input_csv)
+        # Iterate through each row in the dataset
+        extended_data = []
+        for index, row in source_data.iterrows():
+            # label = row['label']
+            # pixels = row.drop('label').values
+            label = row[0]
+            pixels = row[1:].values
 
-        # Extend original data with rotated images
-        extended_data = data_source
+            # Convert the pixels to an image (28x28)
+            image = Image.fromarray(pixels.reshape(28, 28).astype('uint8'))
 
-        # Convert extended data to DataFrame and save
-        extended_data = pd.DataFrame(extended_data)
-        extended_data.to_csv(output_csv, index=False)
+            # Original image
+            extended_data.append([label] + list(pixels))
+
+            # Rotate and add to extended data
+            for angle in [90, 180, 270]:
+                rotated_image = image.rotate(angle)
+                rotated_pixels = np.array(rotated_image).flatten()
+                extended_data.append([label] + list(rotated_pixels))
+
+        # Convert extended data to DataFrame
+        extended_df = pd.DataFrame(extended_data, columns=source_data.columns)
+
+        # Save extended data to CSV, preserving header
+        extended_df.to_csv(output_csv, index=False)
 
         print('Extended Data saved to train_extended.csv!')
 
