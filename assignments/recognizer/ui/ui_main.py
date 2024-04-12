@@ -78,12 +78,6 @@ class Ui_Recognizer(object):
 
         self.verticalLayout.addWidget(self.btnLoadImage)
 
-        self.btnRecognize = QPushButton(self.centralwidget)
-        self.btnRecognize.setObjectName(u"btnRecognize")
-        self.btnRecognize.setMinimumSize(QSize(0, 35))
-
-        self.verticalLayout.addWidget(self.btnRecognize)
-
         self.splitter_3 = QSplitter(self.centralwidget)
         self.splitter_3.setObjectName(u"splitter_3")
         self.splitter_3.setOrientation(Qt.Horizontal)
@@ -96,6 +90,12 @@ class Ui_Recognizer(object):
         self.splitter_3.addWidget(self.linIndex)
 
         self.verticalLayout.addWidget(self.splitter_3)
+
+        self.btnRecognize = QPushButton(self.centralwidget)
+        self.btnRecognize.setObjectName(u"btnRecognize")
+        self.btnRecognize.setMinimumSize(QSize(0, 35))
+
+        self.verticalLayout.addWidget(self.btnRecognize)
 
         self.btnDisplay = QPushButton(self.centralwidget)
         self.btnDisplay.setObjectName(u"btnDisplay")
@@ -129,10 +129,10 @@ class Ui_Recognizer(object):
         self.linIterations.setText(QCoreApplication.translate("Recognizer", u"500", None))
         self.btnExtendData.setText(QCoreApplication.translate("Recognizer", u"Extend Source Data", None))
         self.btnTeach.setText(QCoreApplication.translate("Recognizer", u"Train Model", None))
-        self.btnLoadImage.setText(QCoreApplication.translate("Recognizer", u"Load Image", None))
-        self.btnRecognize.setText(QCoreApplication.translate("Recognizer", u"Recognize Image", None))
+        self.btnLoadImage.setText(QCoreApplication.translate("Recognizer", u"Load Custom Image", None))
         self.label_3.setText(QCoreApplication.translate("Recognizer", u"MNIST Image index", None))
         self.linIndex.setText(QCoreApplication.translate("Recognizer", u"1", None))
-        self.btnDisplay.setText(QCoreApplication.translate("Recognizer", u"Display Image by Index", None))
+        self.btnRecognize.setText(QCoreApplication.translate("Recognizer", u"Recognize Test or Custom Image", None))
+        self.btnDisplay.setText(QCoreApplication.translate("Recognizer", u"Display Train Image by Index", None))
     # retranslateUi
 

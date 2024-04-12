@@ -112,14 +112,14 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
         self.data_train = np.array(data_train)
         self.data_test = np.array(data_test)
+        self.data_display = np.array(pd.read_csv(data_file_train)).T
 
         # Load TEST and TRAIN sets
         rows_train, columns_train = self.data_train.shape
         data_test = self.data_test.T
         data_train = self.data_train.T
 
-        self.data_display = data_train
-
+        # Set data for training
         self.numbers_data_test = data_test
         self.numbers_data_test = self.numbers_data_test / 255.
 
@@ -151,33 +151,37 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
         # Load the dataset
         input_csv = f"{root}/data/mnist/train.csv"
-        output_csv = f"{root}/data/mnist/train_extended.csv"
+        output_csv = f"{root}/data/mnist/train_extended_test.csv"
 
-        df = pd.read_csv(input_csv, header=None, skiprows=1)
+        data_source = pd.read_csv(input_csv)
 
-        # Prepare a container for extended data
-        extended_data = []
+        # Extend original data with rotated images
+        extended_data = data_source
 
-        # Iterate through each row in the dataset
-        for index, row in df.iterrows():
-            label = row[0]
-            pixels = row[1:].values
-
-            # Convert the pixels to an image (28x28)
-            image = Image.fromarray(pixels.reshape(28, 28).astype('uint8'))
-
-            # Original image
-            extended_data.append([label] + list(pixels))
-
-            # Rotate and add to extended data
-            for angle in [90, 180, 270]:
-                rotated_image = image.rotate(angle)
-                rotated_pixels = np.array(rotated_image).flatten()
-                extended_data.append([label] + list(rotated_pixels))
+        # # Prepare a container for extended data
+        # extended_data = []
+        #
+        # # Iterate through each row in the dataset
+        # for index, row in data_source.iterrows():
+        #     label = row[0]
+        #     pixels = row[1:].values
+        #
+        #     # Convert the pixels to an image (28x28)
+        #     image = Image.fromarray(pixels.reshape(28, 28).astype('uint8'))
+        #
+        #     # Original image
+        #     extended_data.append([label] + list(pixels))
+        #
+        #     # Rotate and add to extended data
+        #     for angle in [90]:  #, 180, 270
+        #         rotated_image = image.rotate(angle)
+        #         rotated_pixels = np.array(rotated_image).flatten()
+        #         extended_data.append([label] + list(rotated_pixels))
 
         # Convert extended data to DataFrame and save
-        extended_df = pd.DataFrame(extended_data)
-        extended_df.to_csv(output_csv, index=False, header=False)
+        extended_data = extended_data.T
+        extended_data = pd.DataFrame(extended_data)
+        extended_data.to_csv(output_csv)
 
         print('Extended Data saved to train_extended.csv!')
 
@@ -343,20 +347,18 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
     def display_mnist(self):
         """
-        Load train.csv data into UI
+        Load train.csv data into UI by row index
+        index 41999 is number 9, which is row 42001 in train.csv
         """
 
         image_index = int(self.linIndex.text())
-
-        # data_file = f"{root}/data/mnist/train.csv"
-        # data = np.array(pd.read_csv(data_file))
-        # data = data.T
 
         current_image = self.data_display[1:, image_index, None]
         current_image = current_image.reshape((28, 28)) * 255
         self.update_plot(current_image)
 
-        message = f'Display: {self.data_display[0][image_index]}'
+        # Report
+        message = f'Display Number {self.data_display[0][image_index]}'
         self.statusbar.showMessage(message)
         print(message)
 
@@ -371,8 +373,8 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
         # Report
         message = f'Current image recognized as {prediction[0]}'
-        print(message)
         self.statusbar.showMessage(message)
+        print(message)
 
         # Show image in UI
         current_image = current_image.reshape((28, 28)) * 255
