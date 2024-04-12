@@ -112,8 +112,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
         self.data_train = np.array(data_train)
         self.data_test = np.array(data_test)
-        # self.data_display = np.array(pd.read_csv(data_file_extended)).T
-        self.data_display = np.array(pd.read_csv(f"{root}/data/mnist/train_extended_test.csv")).T
+        self.data_display = np.array(data_train).T
 
         # Load TEST and TRAIN sets
         rows_train, columns_train = self.data_train.shape
@@ -146,6 +145,10 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
     def extend_source_data(self):
         """
         Extend source data set with rotated images
+
+        option for getting label and pixels data
+        label = row['label']
+        pixels = row.drop('label').values
         """
 
         print('Extending Source Data...')
@@ -158,8 +161,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         # Iterate through each row in the dataset
         extended_data = []
         for index, row in source_data.iterrows():
-            # label = row['label']
-            # pixels = row.drop('label').values
+
             label = row[0]
             pixels = row[1:].values
 
