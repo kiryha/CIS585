@@ -112,7 +112,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
         self.data_train = np.array(data_train)
         self.data_test = np.array(data_test)
-        self.data_display = np.array(pd.read_csv(data_file_train)).T
+        self.data_display = np.array(pd.read_csv(f"{root}/data/mnist/train_extended_test.csv")).T
 
         # Load TEST and TRAIN sets
         rows_train, columns_train = self.data_train.shape
@@ -158,30 +158,9 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         # Extend original data with rotated images
         extended_data = data_source
 
-        # # Prepare a container for extended data
-        # extended_data = []
-        #
-        # # Iterate through each row in the dataset
-        # for index, row in data_source.iterrows():
-        #     label = row[0]
-        #     pixels = row[1:].values
-        #
-        #     # Convert the pixels to an image (28x28)
-        #     image = Image.fromarray(pixels.reshape(28, 28).astype('uint8'))
-        #
-        #     # Original image
-        #     extended_data.append([label] + list(pixels))
-        #
-        #     # Rotate and add to extended data
-        #     for angle in [90]:  #, 180, 270
-        #         rotated_image = image.rotate(angle)
-        #         rotated_pixels = np.array(rotated_image).flatten()
-        #         extended_data.append([label] + list(rotated_pixels))
-
         # Convert extended data to DataFrame and save
-        extended_data = extended_data.T
         extended_data = pd.DataFrame(extended_data)
-        extended_data.to_csv(output_csv)
+        extended_data.to_csv(output_csv, index=False)
 
         print('Extended Data saved to train_extended.csv!')
 
