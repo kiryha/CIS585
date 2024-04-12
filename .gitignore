@@ -1,4 +1,4 @@
 .idea
 *.pyc
-assignments/recognizer/data/mnist/train_extended.csv
-assignments/recognizer/data/mnist/train.csv
+*.csv
+

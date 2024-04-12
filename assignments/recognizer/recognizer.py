@@ -60,11 +60,11 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         self.custom_image_path = None
 
         # Model
-        self.data = None  # MNIST csv
+        self.data_train = None  # MNIST csv
+        self.data_test = None  # MNIST csv
         self.numbers_data_train = None  # Numbers data (array of floats for each pixel) for TRAIN set of images
         self.numbers_labels_train = None  # Number values (labels): 0. 1, 2, 3, ... 9 for TRAIN set of images
-        self.numbers_data_dev = None
-        self.numbers_labels_dev = None
+        self.numbers_data_test = None
         self.W1_path = f'{root}/data/model/W1.csv'
         self.W2_path = f'{root}/data/model/W2.csv'
         self.b1_path = f'{root}/data/model/b1.csv'
@@ -93,31 +93,34 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         """
 
         # Load MNIST
+        data_file_train = f"{root}/data/mnist/train.csv"
+        data_file_test = f"{root}/data/mnist/test.csv"
         data_file_extended = f"{root}/data/mnist/train_extended.csv"
-        data_file = f"{root}/data/mnist/train.csv"
 
         if os.path.exists(data_file_extended):
             token = 'Extended'
             print('Loading Extended Data...')
-            data = pd.read_csv(data_file_extended)
+            data_train = pd.read_csv(data_file_extended)
         else:
             token = 'Original'
             print('Loading Original Data...')
-            data = pd.read_csv(data_file)
+            data_train = pd.read_csv(data_file_train)
 
-        self.data = np.array(data)
+        data_test = pd.read_csv(data_file_test)
 
-        # Split into DEV and TRAIN sets
-        rows, columns = self.data.shape
-        data_dev = self.data[0:1000].T
-        data_train = self.data[1000:rows].T
+        self.data_train = np.array(data_train)
+        self.data_test = np.array(data_test)
 
-        self.numbers_labels_dev = data_dev[0]
-        self.numbers_data_dev = data_dev[1:columns]
-        self.numbers_data_dev = self.numbers_data_dev / 255.
+        # Load TEST and TRAIN sets
+        rows_train, columns_train = self.data_train.shape
+        data_test = self.data_test.T
+        data_train = self.data_train.T
 
-        self.numbers_labels_train = data_train[0]  # 784 items
-        self.numbers_data_train = data_train[1:columns]
+        self.numbers_data_test = data_test
+        self.numbers_data_test = self.numbers_data_test / 255.
+
+        self.numbers_labels_train = data_train[0]
+        self.numbers_data_train = data_train[1:columns_train]
         self.numbers_data_train = self.numbers_data_train / 255.
 
         print(f'The {token} loaded!')
@@ -132,7 +135,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         self.W2 = np.loadtxt(self.W2_path, delimiter=',')
         self.b1 = np.loadtxt(self.b1_path, delimiter=',')
         self.b2 = np.loadtxt(self.b2_path, delimiter=',')
-        
+
         print(f'Data loaded!')
 
     def extend_source_data(self):
@@ -339,12 +342,11 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         """
 
         # Get image data from MNIST
-        current_image = self.numbers_data_dev[:, index, None]
-        prediction = self.make_predictions(self.numbers_data_dev[:, index, None], self.W1, self.b1, self.W2, self.b2)
-        label = self.numbers_labels_dev[index]
+        current_image = self.numbers_data_test[:, index, None]
+        prediction = self.make_predictions(self.numbers_data_test[:, index, None], self.W1, self.b1, self.W2, self.b2)
 
         # Report
-        message = f'MNIST Number {label} recognized as {prediction[0]}'
+        message = f'Current image recognized as {prediction[0]}'
         print(message)
         self.statusbar.showMessage(message)
 
