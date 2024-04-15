@@ -235,7 +235,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
     def get_accuracy(self, predictions):
 
-        print(predictions, self.numbers_labels_train)
+        # print(predictions, self.numbers_labels_train)
 
         return np.sum(predictions == self.numbers_labels_train) / self.numbers_labels_train.size
 
@@ -294,6 +294,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
         W1, b1, W2, b2 = self.init_parameters()  # The trained weights and biases of the model
 
+        accuracy = 0
         for i in range(iterations):
             Z1, A1, Z2, A2 = self.forward_propagation(W1, b1, W2, b2, self.numbers_data_train)
             dW1, db1, dW2, db2 = self.backward_propagation(Z1, A1, Z2, A2, W1, W2, self.numbers_data_train, self.numbers_labels_train)
@@ -302,7 +303,10 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
             if i % 10 == 0:
                 print(f"Iteration: {i}")
                 predictions = self.get_predictions(A2)
-                print(f'Accuracy: {self.get_accuracy(predictions)}')
+                accuracy = self.get_accuracy(predictions)
+                # print(f'Accuracy: {accuracy}')
+
+        print(f'Model Accuracy: {accuracy}')
 
         return W1, b1, W2, b2
 
