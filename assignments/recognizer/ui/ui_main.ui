@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>294</width>
-    <height>560</height>
+    <height>651</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -62,6 +62,42 @@
      </widget>
     </item>
     <item>
+     <widget class="QSplitter" name="splitter_6">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QPushButton" name="btnTrainSource">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>35</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Train Source Model</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btnTrainExtended">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>35</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Train Extended Model</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
      <widget class="QPushButton" name="btnExtendData">
       <property name="minimumSize">
        <size>
@@ -75,20 +111,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="btnTeach">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>35</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Train Model</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="Line" name="line">
+     <widget class="Line" name="line_2">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
@@ -96,6 +119,40 @@
     </item>
     <item>
      <layout class="QVBoxLayout" name="layImages"/>
+    </item>
+    <item>
+     <widget class="QSplitter" name="splitter_4">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QPushButton" name="btnToSourceModel">
+       <property name="text">
+        <string>Source Model</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btnToExtendedModel">
+       <property name="text">
+        <string>Extended Model</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QSplitter" name="splitter_5">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QLabel" name="labModel">
+       <property name="text">
+        <string>Current Model:</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="linModel">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </widget>
     </item>
     <item>
      <widget class="QPushButton" name="btnLoadImage">
@@ -117,7 +174,7 @@
       </property>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>MNIST Image index</string>
+        <string>MNIST Row Number</string>
        </property>
       </widget>
       <widget class="QLineEdit" name="linIndex">
@@ -155,7 +212,7 @@
        </size>
       </property>
       <property name="text">
-       <string>Display Train Image by Index</string>
+       <string>Display train.csv by MNIST Row Number</string>
       </property>
      </widget>
     </item>

@@ -57,29 +57,35 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         self.layImages.addWidget(self.plot_widget)
         self.display_random()
 
+        # Data
         self.custom_image_path = None
+        self.numbers_data_test = None
+        self.data_display = None
 
         # Model
-        self.data_train = None  # MNIST csv
-        self.data_test = None  # MNIST csv
-        self.data_display = None  # MNIST csv data to display image in UI for debug/test
-        self.numbers_data_train = None  # Numbers data (array of floats for each pixel) for TRAIN set of images
-        self.numbers_labels_train = None  # Number values (labels): 0. 1, 2, 3, ... 9 for TRAIN set of images
-        self.numbers_data_test = None
-        self.W1_path = f'{root}/data/model/W1.csv'
-        self.W2_path = f'{root}/data/model/W2.csv'
-        self.b1_path = f'{root}/data/model/b1.csv'
-        self.b2_path = f'{root}/data/model/b2.csv'
+        self.W1_path_source = f'{root}/data/model/s_W1.csv'
+        self.W2_path_source = f'{root}/data/model/s_W2.csv'
+        self.b1_path_source = f'{root}/data/model/s_b1.csv'
+        self.b2_path_source = f'{root}/data/model/s_b2.csv'
+        self.W1_path_extended = f'{root}/data/model/e_W1.csv'
+        self.W2_path_extended = f'{root}/data/model/e_W2.csv'
+        self.b1_path_extended = f'{root}/data/model/e_b1.csv'
+        self.b2_path_extended = f'{root}/data/model/e_b2.csv'
         self.W1 = None  # Weight matrix for the first layer
         self.b1 = None  # Bias vector for the first layer
         self.W2 = None  # Weight matrix for the second layer
         self.b2 = None  # Bias vector for the second layer
+
+        # Load existing data and model
         self.load_model()
 
         # UI calls
         self.btnLoadImage.clicked.connect(self.load_image)
         self.btnExtendData.clicked.connect(self.extend_source_data)
-        self.btnTeach.clicked.connect(self.train_model)
+        self.btnTrainSource.clicked.connect(self.train_source_model)
+        self.btnTrainExtended.clicked.connect(self.train_extended_model)
+        self.btnToSourceModel.clicked.connect(self.set_source_model)
+        self.btnToExtendedModel.clicked.connect(self.set_extended_model)
         self.btnRecognize.clicked.connect(self.recognize)
         self.btnDisplay.clicked.connect(self.display_mnist)
 
@@ -91,64 +97,35 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
     def load_model(self):
         """
-        Load trained model if it exists
+        Load trained model (source or extended) if it exists
         """
 
-        # Load MNIST
-        data_file_train = f"{root}/data/mnist/train.csv"
-        data_file_test = f"{root}/data/mnist/test.csv"
-        data_file_extended = f"{root}/data/mnist/train_extended.csv"
+        print('Checking existing models...')
 
+        # Load data for debug display
+        data_file_extended = f"{root}/data/mnist/train.csv"
         if os.path.exists(data_file_extended):
-            token = 'Extended'
-            print('Loading Extended Data...')
-            data_train = pd.read_csv(data_file_extended)
-        else:
-            token = 'Original'
-            print('Loading Original Data...')
-            data_train = pd.read_csv(data_file_train)
+            data_extended = np.array(pd.read_csv(data_file_extended))
+            self.data_display = np.array(data_extended).T
 
+        # Load test data
+        data_file_test = f"{root}/data/mnist/test.csv"
         data_test = pd.read_csv(data_file_test)
+        self.numbers_data_test = np.array(data_test).T / 255.
 
-        self.data_train = np.array(data_train)
-        self.data_test = np.array(data_test)
-        self.data_display = np.array(data_train).T
-
-        # Load TEST and TRAIN sets
-        rows_train, columns_train = self.data_train.shape
-        data_test = self.data_test.T
-        data_train = self.data_train.T
-
-        # Set data for training
-        self.numbers_data_test = data_test
-        self.numbers_data_test = self.numbers_data_test / 255.
-
-        self.numbers_labels_train = data_train[0]
-        self.numbers_data_train = data_train[1:columns_train]
-        self.numbers_data_train = self.numbers_data_train / 255.
-
-        print(f'The {token} loaded!')
-
-        if not os.path.exists(self.W1_path):
-            print('Trained data does not exists. Train model first!')
+        # Load existing model, extended has priority
+        if self.set_extended_model():
             return
+        else:
+            print('Extended model does not exists!')
 
-        print(f'Loading Trained {token} data...')
-
-        self.W1 = np.loadtxt(self.W1_path, delimiter=',')
-        self.W2 = np.loadtxt(self.W2_path, delimiter=',')
-        self.b1 = np.loadtxt(self.b1_path, delimiter=',')
-        self.b2 = np.loadtxt(self.b2_path, delimiter=',')
-
-        print(f'Data loaded!')
+        if not self.set_source_model():
+            print('Source model does not exists! Train your model first!')
+            self.linModel.setText('Not Exists')
 
     def extend_source_data(self):
         """
         Extend source data set with rotated images
-
-        option for getting label and pixels data
-        label = row['label']
-        pixels = row.drop('label').values
         """
 
         print('Extending Source Data...')
@@ -233,11 +210,11 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
         return np.argmax(A2, 0)
 
-    def get_accuracy(self, predictions):
+    def get_accuracy(self, predictions, digit_labels):
 
-        # print(predictions, self.numbers_labels_train)
+        accuracy = np.sum(predictions == digit_labels) / digit_labels.size
 
-        return np.sum(predictions == self.numbers_labels_train) / self.numbers_labels_train.size
+        return accuracy
 
     # Propagation
     def forward_propagation(self, W1, b1, W2, b2, X):
@@ -286,7 +263,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
         return W1, b1, W2, b2
 
-    def gradient_descent(self, alpha, iterations):
+    def gradient_descent(self, alpha, iterations, digit_data, digit_labels):
         """
         Train neural network model by updating its parameters (weights and biases) iteratively
         to minimize the loss function (difference between the model's predictions and the actual values).
@@ -295,16 +272,15 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         W1, b1, W2, b2 = self.init_parameters()  # The trained weights and biases of the model
 
         accuracy = 0
-        for i in range(iterations):
-            Z1, A1, Z2, A2 = self.forward_propagation(W1, b1, W2, b2, self.numbers_data_train)
-            dW1, db1, dW2, db2 = self.backward_propagation(Z1, A1, Z2, A2, W1, W2, self.numbers_data_train, self.numbers_labels_train)
+        for index in range(iterations):
+            Z1, A1, Z2, A2 = self.forward_propagation(W1, b1, W2, b2, digit_data)
+            dW1, db1, dW2, db2 = self.backward_propagation(Z1, A1, Z2, A2, W1, W2, digit_data, digit_labels)
             W1, b1, W2, b2 = self.update_parameters(W1, b1, W2, b2, dW1, db1, dW2, db2, alpha)
 
-            if i % 10 == 0:
-                print(f"Iteration: {i}")
+            if index % 10 == 0:
+                print(f"Current iteration: {index}")
                 predictions = self.get_predictions(A2)
-                accuracy = self.get_accuracy(predictions)
-                # print(f'Accuracy: {accuracy}')
+                accuracy = self.get_accuracy(predictions, digit_labels)
 
         print(f'Model Accuracy: {accuracy}')
 
@@ -368,7 +344,7 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
 
     def recognize_mnist(self, index):
         """
-        Recognize image from DEV set by image data index
+        Recognize image from test.csv set by image data index
         """
 
         # Get image data from MNIST
@@ -385,6 +361,36 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         self.update_plot(current_image)
 
     # UI calls
+    def set_source_model(self):
+
+        if os.path.exists(self.W1_path_source):
+            print('Loading source model...')
+
+            self.W1 = np.loadtxt(self.W1_path_source, delimiter=',')
+            self.W2 = np.loadtxt(self.W2_path_source, delimiter=',')
+            self.b1 = np.loadtxt(self.b1_path_source, delimiter=',')
+            self.b2 = np.loadtxt(self.b2_path_source, delimiter=',')
+            self.linModel.setText('Source')
+
+            print('Source model loaded!')
+
+            return True
+
+    def set_extended_model(self):
+
+        if os.path.exists(self.W1_path_extended):
+            print('Loading extended model...')
+
+            self.W1 = np.loadtxt(self.W1_path_extended, delimiter=',')
+            self.W2 = np.loadtxt(self.W2_path_extended, delimiter=',')
+            self.b1 = np.loadtxt(self.b1_path_extended, delimiter=',')
+            self.b2 = np.loadtxt(self.b2_path_extended, delimiter=',')
+            self.linModel.setText('Extended')
+
+            print('Extended model loaded!')
+
+            return True
+
     def load_image(self):
         """
         Load custom jpg
@@ -400,21 +406,75 @@ class Recognizer(QtWidgets.QMainWindow, ui_main.Ui_Recognizer):
         self.custom_image_path = custom_image_path
         self.update_plot(np.array(Image.open(self.custom_image_path)))
 
-    def train_model(self):
+    def train_source_model(self):
+        """
+        Train model on source data set
+        """
 
-        self.statusbar.showMessage('Training model...')
+        self.statusbar.showMessage('Training source model...')
+
+        # Load data
+        data_file_source = f"{root}/data/mnist/train.csv"
+        data_source = np.array(pd.read_csv(data_file_source))
+
+        rows_source, columns_source = data_source.shape
+        data_source = data_source.T
+
+        digit_labels_source = data_source[0]
+        digit_data_source = data_source[1:columns_source]
+        digit_data_source = digit_data_source / 255.
 
         alfa = float(self.linAlfa.text())
         iterations = int(self.linIterations.text())
-        self.W1, self.b1, self.W2, self.b2 = self.gradient_descent(alfa, iterations)
+
+        self.W1, self.b1, self.W2, self.b2 = self.gradient_descent(alfa, iterations, digit_data_source, digit_labels_source)
 
         # Save data to CSV files
-        np.savetxt(self.W1_path, self.W1, delimiter=',')
-        np.savetxt(self.W2_path, self.W2, delimiter=',')
-        np.savetxt(self.b1_path, self.b1, delimiter=',')
-        np.savetxt(self.b2_path, self.b2, delimiter=',')
+        np.savetxt(self.W1_path_source, self.W1, delimiter=',')
+        np.savetxt(self.W2_path_source, self.W2, delimiter=',')
+        np.savetxt(self.b1_path_source, self.b1, delimiter=',')
+        np.savetxt(self.b2_path_source, self.b2, delimiter=',')
 
-        self.statusbar.showMessage('Model trained and saved to files!')
+        self.linModel.setText('Source')
+
+        self.statusbar.showMessage('Model trained on source data and saved to files!')
+
+    def train_extended_model(self):
+        """
+        Train model on extended data set (rotate all source digits 90, 180, 270 degrees)
+        """
+
+        self.statusbar.showMessage('Training extended model...')
+
+        # Load data
+        data_file_extended = f"{root}/data/mnist/train.csv"
+        if not os.path.exists(data_file_extended):
+            print('Extended data set not exists! Extend source data first.')
+            return
+
+        data_extended = np.array(pd.read_csv(data_file_extended))
+
+        rows_extended, columns_extended = data_extended.shape
+        data_extended = data_extended.T
+
+        digit_labels_extended = data_extended[0]
+        digit_data_extended = data_extended[1:columns_extended]
+        digit_data_extended = digit_data_extended / 255.
+
+        alfa = float(self.linAlfa.text())
+        iterations = int(self.linIterations.text())
+
+        self.W1, self.b1, self.W2, self.b2 = self.gradient_descent(alfa, iterations, digit_data_extended, digit_labels_extended)
+
+        # Save data to CSV files
+        np.savetxt(self.W1_path_extended, self.W1, delimiter=',')
+        np.savetxt(self.W2_path_extended, self.W2, delimiter=',')
+        np.savetxt(self.b1_path_extended, self.b1, delimiter=',')
+        np.savetxt(self.b2_path_extended, self.b2, delimiter=',')
+
+        self.linModel.setText('Extended')
+
+        self.statusbar.showMessage('Model trained on source data and saved to files!')
 
     def recognize(self):
 
