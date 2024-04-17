@@ -17,7 +17,7 @@ class Ui_Recognizer(object):
     def setupUi(self, Recognizer):
         if not Recognizer.objectName():
             Recognizer.setObjectName(u"Recognizer")
-        Recognizer.resize(294, 651)
+        Recognizer.resize(294, 674)
         self.centralwidget = QWidget(Recognizer)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -162,7 +162,7 @@ class Ui_Recognizer(object):
     # setupUi
 
     def retranslateUi(self, Recognizer):
-        Recognizer.setWindowTitle(QCoreApplication.translate("Recognizer", u"Number Recognizer", None))
+        Recognizer.setWindowTitle(QCoreApplication.translate("Recognizer", u"Recognizer", None))
         self.label.setText(QCoreApplication.translate("Recognizer", u"Alfa: ", None))
         self.linAlfa.setText(QCoreApplication.translate("Recognizer", u"0.1", None))
         self.label_2.setText(QCoreApplication.translate("Recognizer", u"Iterations: ", None))
